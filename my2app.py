@@ -20,7 +20,7 @@ TEACHER_DB = {
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     # ★ここを修正しました！古い 'gemini-pro' から最新の 'gemini-1.5-flash' に変更
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 except:
     st.error("⚠️ GeminiのAPIキーが設定されていません")
 
