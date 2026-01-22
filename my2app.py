@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
 
@@ -23,21 +24,26 @@ try:
 except:
     st.error("⚠️ GeminiのAPIキーが設定されていません")
 
-# スプレッドシートの設定（ここを最新版にしました！）
+# スプレッドシートの設定（ここを「最強の安定版」に戻しました！）
 try:
-    # Secretsからデータを辞書として読み込む
+    # Secretsから辞書としてデータを読み込む
+    # Streamlitが[gcp_service_account]を自動で辞書にしてくれています
     json_key = dict(st.secrets["gcp_service_account"])
 
-    # 念のため、private_keyの改行コードを正しく修正する（ここがミソ！）
+    # 【重要】private_keyの改行トラブルをここで強制的に直す！
     if "private_key" in json_key:
         json_key["private_key"] = json_key["private_key"].replace("\\n", "\n")
 
-    # 新しいシンプルな接続方法
-    # scopeの設定なども全部自動でやってくれます
-    client = gspread.service_account_from_dict(json_key)
+    # 認証スコープ（権限の範囲）を設定
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+
+    # 認証情報を作成（ここが一番確実な方法です）
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(json_key, scope)
     
-    # スプレッドシートを開く
+    # ログインしてスプレッドシートを開く
+    client = gspread.authorize(creds)
     sheet = client.open("univoice_db").sheet1
+    
 except Exception as e:
     st.error(f"⚠️ スプレッドシートへの接続に失敗しました: {e}")
 
