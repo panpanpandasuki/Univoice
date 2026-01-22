@@ -22,22 +22,34 @@ try:
     model = genai.GenerativeModel('gemini-pro')
 except:
     st.error("⚠️ GeminiのAPIキーが設定されていません")
-
-# スプレッドシートの設定（★ここが最強版です！）
+    # スプレッドシートの設定
 try:
     # Secretsからデータを取り出す
     secret_data = st.secrets["gcp_service_account"]
 
-    # ⚠️ ここで魔法をかけます！
-    # 足りない情報（typeやtoken_uri）を勝手に埋めて、
-    # 完璧な辞書データを作ります。これで「missing fields」エラーは出ません。
+    # 鍵のクリーニング処理（念入り版）
+    # 1. 改行コードを直す
+    # 2. 前後の余計な空白(.strip)を消す ← これを追加！
+    pkey = secret_data["private_key"].replace("\\n", "\n").strip()
+
     credentials_dict = {
-        "type": "service_account",  # これは固定
-        "project_id": "unknown",    # なくても動くことが多い
-        "private_key_id": "unknown",# なくても動く
-        "private_key": secret_data["private_key"].replace("\\n", "\n"), # 改行を直す
+        "type": "service_account",
+        "project_id": "unknown",
+        "private_key_id": "unknown",
+        "private_key": pkey,  # クリーニングした鍵を使う
         "client_email": secret_data["client_email"],
-        "client_id": "unknown",     # なくても動く
+        "client_id": "unknown",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "unknown"
+    }
+
+    client = gspread.service_account_from_dict(credentials_dict)
+    sheet = client.open("univoice_db").sheet1
+    
+except Exception as e:
+    st.error(f"⚠️ スプレッドシートへの接続に失敗しました: {e}")
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
