@@ -22,21 +22,21 @@ try:
     model = genai.GenerativeModel('gemini-pro')
 except:
     st.error("⚠️ GeminiのAPIキーが設定されていません")
-    # スプレッドシートの設定
+
+# スプレッドシートの設定
 try:
     # Secretsからデータを取り出す
     secret_data = st.secrets["gcp_service_account"]
 
-    # 鍵のクリーニング処理（念入り版）
-    # 1. 改行コードを直す
-    # 2. 前後の余計な空白(.strip)を消す ← これを追加！
+    # 鍵のクリーニング（改行や余白のゴミを掃除する）
     pkey = secret_data["private_key"].replace("\\n", "\n").strip()
 
+    # 足りない情報を自動補完して辞書を作る
     credentials_dict = {
         "type": "service_account",
         "project_id": "unknown",
         "private_key_id": "unknown",
-        "private_key": pkey,  # クリーニングした鍵を使う
+        "private_key": pkey,
         "client_email": secret_data["client_email"],
         "client_id": "unknown",
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -45,22 +45,8 @@ try:
         "client_x509_cert_url": "unknown"
     }
 
+    # 接続する
     client = gspread.service_account_from_dict(credentials_dict)
-    sheet = client.open("univoice_db").sheet1
-    
-except Exception as e:
-    st.error(f"⚠️ スプレッドシートへの接続に失敗しました: {e}")
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "unknown"
-    }
-
-    # 新しいシンプルな接続方法（gspread純正）
-    # 古い oauth2client は使いません！
-    client = gspread.service_account_from_dict(credentials_dict)
-    
-    # スプレッドシートを開く
     sheet = client.open("univoice_db").sheet1
     
 except Exception as e:
