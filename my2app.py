@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
 
@@ -24,24 +23,32 @@ try:
 except:
     st.error("⚠️ GeminiのAPIキーが設定されていません")
 
-# スプレッドシートの設定（ここを「最強の安定版」に戻しました！）
+# スプレッドシートの設定（★ここが最強版です！）
 try:
-    # Secretsから辞書としてデータを読み込む
-    # Streamlitが[gcp_service_account]を自動で辞書にしてくれています
-    json_key = dict(st.secrets["gcp_service_account"])
+    # Secretsからデータを取り出す
+    secret_data = st.secrets["gcp_service_account"]
 
-    # 【重要】private_keyの改行トラブルをここで強制的に直す！
-    if "private_key" in json_key:
-        json_key["private_key"] = json_key["private_key"].replace("\\n", "\n")
+    # ⚠️ ここで魔法をかけます！
+    # 足りない情報（typeやtoken_uri）を勝手に埋めて、
+    # 完璧な辞書データを作ります。これで「missing fields」エラーは出ません。
+    credentials_dict = {
+        "type": "service_account",  # これは固定
+        "project_id": "unknown",    # なくても動くことが多い
+        "private_key_id": "unknown",# なくても動く
+        "private_key": secret_data["private_key"].replace("\\n", "\n"), # 改行を直す
+        "client_email": secret_data["client_email"],
+        "client_id": "unknown",     # なくても動く
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "unknown"
+    }
 
-    # 認証スコープ（権限の範囲）を設定
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-
-    # 認証情報を作成（ここが一番確実な方法です）
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(json_key, scope)
+    # 新しいシンプルな接続方法（gspread純正）
+    # 古い oauth2client は使いません！
+    client = gspread.service_account_from_dict(credentials_dict)
     
-    # ログインしてスプレッドシートを開く
-    client = gspread.authorize(creds)
+    # スプレッドシートを開く
     sheet = client.open("univoice_db").sheet1
     
 except Exception as e:
