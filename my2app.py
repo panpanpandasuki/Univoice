@@ -19,7 +19,8 @@ TEACHER_DB = {
 # Geminiの設定
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel('gemini-pro')
+    # ★ここを修正しました！古い 'gemini-pro' から最新の 'gemini-1.5-flash' に変更
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except:
     st.error("⚠️ GeminiのAPIキーが設定されていません")
 
@@ -28,7 +29,7 @@ try:
     # Secretsからデータを取り出す
     secret_data = st.secrets["gcp_service_account"]
 
-    # 鍵のクリーニング（改行や余白のゴミを掃除する）
+    # 鍵のクリーニング
     pkey = secret_data["private_key"].replace("\\n", "\n").strip()
 
     # 足りない情報を自動補完して辞書を作る
