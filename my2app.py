@@ -46,13 +46,17 @@ try:
         "client_x509_cert_url": "unknown"
     }
 
+    # 変数を初期化（おまじない）
+    sheet = None 
+
     # 接続する
     client = gspread.service_account_from_dict(credentials_dict)
-    sheet = client.open("univoice_db").sheet1
+    # スプレッドシート名が合っているか確認してください！
+    sheet = client.open("univoice_db").sheet1 
     
 except Exception as e:
     st.error(f"⚠️ スプレッドシートへの接続に失敗しました: {e}")
-
+    st.warning("ヒント: スプレッドシートの名前は 'univoice_db' ですか？ ボットのメアドを「編集者」として招待しましたか？")
 # ==========================================
 # 2. 画面のデザイン
 # ==========================================
