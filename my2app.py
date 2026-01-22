@@ -28,8 +28,9 @@ except:
 
 # スプレッドシートの設定
 try:
-    # SecretsからJSON文字列を読み込んで辞書に変換
-    json_key = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+   # SecretsからJSON文字列を読み込んで辞書に変換
+    # ⚠️ strict=False をつけると、制御文字のエラーを無視してくれます
+    json_key = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"], strict=False)
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_dict(json_key, scope)
     client = gspread.authorize(creds)
